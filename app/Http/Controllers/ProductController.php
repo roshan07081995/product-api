@@ -113,7 +113,7 @@ class ProductController extends Controller
             'name' => $request->name,
             'description' => $request->description,
             'price' => $request->price,
-            'category' => $request->category,
+            'category_id' => $request->category_id,
             'image' => $request->image,
         ];
         DB::beginTransaction();
@@ -136,7 +136,7 @@ class ProductController extends Controller
     {
         $this->productRepositoryInterface->delete($product->id);
 
-        return ApiResponseClass::sendResponse('Product Delete Successful','',204);
+        return ApiResponseClass::sendResponse('Product Delete Successful','',201);
     
     }
 }

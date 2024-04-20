@@ -14,7 +14,9 @@ class ProductRepository implements ProductRepositoryInterface
     }
 
     public function index($perPage){
-        return Product::with('category')->with(['rating' => function ($query) {
+        return Product::with(['category' => function ($query) {
+            $query->select('id', 'name');
+        }])->with(['rating' => function ($query) {
             $query->select('rate', 'count','product_id');
         }])->paginate($perPage);
     }

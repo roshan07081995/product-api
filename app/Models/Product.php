@@ -17,7 +17,7 @@ class Product extends Model
       ];
     public function rating()
     {
-        return $this->hasOne(Ratings::class,'product_id');
+        return $this->hasOne(Ratings::class,'product_id','id');
     }
     public function category()
     {
