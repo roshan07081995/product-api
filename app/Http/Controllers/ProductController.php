@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Requests\UpdateProductRequest;
 use App\Models\Product;
+use App\Models\Ratings;
 use App\Interfaces\ProductRepositoryInterface;
 use App\Classes\ApiResponseClass;
 use App\Http\Resources\ProductResource;
@@ -29,6 +30,7 @@ class ProductController extends Controller
         $perPage = ($request->query('perPage')) ? $request->query('perPage') : 10;
 
         $products = $this->productRepositoryInterface->index($perPage);
+
         $perPage = $products->perPage();
         $totalPages = ceil($products->total() / $perPage);
 
@@ -55,17 +57,28 @@ class ProductController extends Controller
      */
     public function store(StoreProductRequest $request)
     {
+        $request->validate([
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048', // Adjust the validation rules as per your requirements
+        ]);
+
+        // Store the image
+        $imageName = time().'.'.$request->image->extension();  
+        $request->image->move(public_path('images'), $imageName);
+
         $details =[
             'name' => $request->name,
-            'details' => $request->details
+            'description' => $request->description,
+            'price' => $request->price,
+            'category_id' => $request->category_id,
+            'image' => 'images/'.$imageName,
         ];
         DB::beginTransaction();
         try{
       
-             $product = $this->productRepositoryInterface->store($details);
-    
-             DB::commit();
-             return ApiResponseClass::sendResponse(new ProductResource($product),'Product Create Successful',201);
+            $product = $this->productRepositoryInterface->store($details);
+            Ratings::create(['product_id' => $product->id , 'rate' => $request->rate,'count' => $request->count]);
+            DB::commit();
+            return ApiResponseClass::sendResponse(new ProductResource($product),'Product Create Successful',201);
 
         }catch(\Exception $ex){
             return ApiResponseClass::rollback($ex);
@@ -98,7 +111,10 @@ class ProductController extends Controller
     {
         $updateDetails =[
             'name' => $request->name,
-            'details' => $request->details
+            'description' => $request->description,
+            'price' => $request->price,
+            'category' => $request->category,
+            'image' => $request->image,
         ];
         DB::beginTransaction();
         try{
