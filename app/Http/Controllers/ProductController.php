@@ -21,7 +21,6 @@ class ProductController extends Controller
         $this->productRepositoryInterface = $productRepositoryInterface;
     }
 
-    
     /**
      * Display a listing of the resource.
      */
